@@ -108,6 +108,25 @@ class MyTabBarController: UITabBarController {
         
         self.tabBar.tintColor = UIColor.init(red: 114 / 255.0, green: 192 / 255.0, blue: 241 / 255.0, alpha: 1.0) //点击后字体颜色
     }
+    
+    //遍历获取指定类型的属性
+    func findViewWithClassName(className:String, view:UIView) -> UIView? {
+        let specificView:AnyClass? = NSClassFromString(className)
+        if specificView != nil && view.isKind(of: specificView!) {
+            return view
+        }
+        
+        if view.subviews.count > 0 {
+            for subView in view.subviews {
+                let targetView:UIView? = self.findViewWithClassName(className: className, view: subView)
+                if targetView != nil {
+                    return targetView
+                }
+            }
+        }
+        
+        return nil
+    }
 }
 
 extension MyTabBarController:UITabBarControllerDelegate {
@@ -119,7 +138,10 @@ extension MyTabBarController:UITabBarControllerDelegate {
         //取到选中的tabBar 上的button
         let tabBarBtn = tabBarController.tabBar.subviews[index! + 1]
         //取到button上的imageView
-        let imageView:UIImageView = tabBarBtn.subviews.first as! UIImageView
+        let imageViewOrigin:UIView? = self.findViewWithClassName(className: "UITabBarSwappableImageView", view: tabBarBtn)
+        guard let imageView:UIImageView = imageViewOrigin as? UIImageView else {
+            return true
+        }
         if index != self.currentIndex {//刚才点击过的item 不是上一个item
             //把上一个动画取消
             self.currentImageView.stopAnimating()
